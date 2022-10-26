@@ -3,71 +3,72 @@
 using namespace std;
 
 vector<vector<string>> cyk;
+map<string, string> pd;
 map<string, vector<string>> grammar;
 
+// Armazena a gramatica dada no input
 void getGrammar() {
-    int n;
-    cin >> n;
+    //int n;
+    //cin >> n;
 
-    while (n--) {
-        string a, b;
-        grammar[a].push_back(b);
-    }
+    //while (n--) {
+    //    string a, b;
+    //    grammar[a].push_back(b);
+    //}
+
+    grammar["S"] = vector<string>({"AX", "AB"});
+    grammar["R"] = vector<string>({"AX", "AB"});
+    grammar["X"] = vector<string>({"RB", "b"});
+    grammar["A"] = vector<string>({"a"});
+    grammar["B"] = vector<string>({"b"});   
 }
 
 // Verifica se a string c é produto cartesiano das strings a e b
 bool isCartesianProduct(string a, string b, string c) {
-    string product;
-
-    for (int i = 0; i < product.size(); i++) {
-        product = a[i / b.size()] + b[i % b.size()];
+    for (int i = 0, n = a.length() * b.length(); i < n; i++) {
+        string product = string() + a[i / b.size()] + b[i % b.size()];
         if (product == c) return true;
     }
 
     return false;
 }
 
-
 void dp(string w) {
-    int n = w.size();
-    cyk = vector<vector<string>> (5, vector<string> (5));
+    for (int ns = 1, n = w.length(); ns <=  n; ns++) {  // Tamanho do conjunto de letras  
+        for (int i = 0; i <= n - ns; i++) { // Itera pelos conjuntos possiveis
+            string subW = w.substr(i, ns); // Conjunto 
 
-    for (int i = 0; i < n; i++) {
-        for (auto it = grammar.begin(); it != grammar.end(); it++) {
-            string a = it->first;
-            vector<string> b = it->second;
+            for (auto it = grammar.begin(); it != grammar.end(); it++) { // Itera pela gramatica
+                string a = it->first; // Variaveis
+                vector<string> b = it->second; // Simbolos (terminais e nao-terminais)
 
-            for (int j = 0; j < b.size(); j++) {
-                if (w[i] == b[j][0] and b[j].length() == 1) {
-                    cyk[i][i] = (cyk[i][i] == "") ? cyk[i][i] : cyk[i][i] + a;
-                }                
-            }
-        }
-    }
-    
-    for (int l = 2; l <= n; l++) {        
-        for (int i = 0; i <= n - l; i++) {
-            int j = i + l - 1;
-            for (int k = i; l < j; k++) {
-                for (auto it = grammar.begin(); it != grammar.end(); it++) {
-                    string a = it->first;
-                    vector<string> b = it->second;
+                for (int j = 0; j < b.size(); j++) { // Itera pelas producoes
+                    for (int k = 1, wn = subW.length(); k <= wn; k++) { // Controla as combinacoes do conjunto
+                        try { // As vezes a subW eh pequena e quebra na funcao isCartesianProduct, poderia ser resolvido com ifs, mas assim fica menor                   
+                            if (!subW.compare(b[j]) or isCartesianProduct(pd[subW.substr(0, k)], pd[subW.substr(k, wn - k)], b[j])) {
+                                if (pd[subW].find(a) == string::npos) {            
+                                    pd[subW] = (pd[subW] == "") ? a : pd[subW] + a;
+                                }
 
-                    for (int j = 0; j < b.size(); j++) {
-                        if (b[j].length() == 2) {
-                            if (isCartesianProduct(cyk[i][k], cyk[k + 1][j], b[j])) {
-                                cyk[i][j] = (cyk[i][j] == "") ? cyk[i][j] : cyk[i][j] + a;
+                                cyk[ns - 1][i] = pd[subW];
                             }
-                        }
+                        } catch(...) {}
                     }
-                }
+                }        
             }
-        }
-    }
+        }   
+    }    
 }
 
-int main() {
+int main() {    
     getGrammar();
-    
+
+    string w;
+    while (getline(std::cin, w) and w.compare("*")) {
+        cyk = vector<vector<string>> (w.length(), vector<string> (w.length(), ""));  
+        dp(w);
+        cout << w << ": " << ((cyk[w.length() - 1][0].find("S") != string::npos) ? "SIM" : "NAO") << endl;
+    }
+
     return 0;
 }
