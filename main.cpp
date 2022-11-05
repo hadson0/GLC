@@ -39,22 +39,25 @@ void CYK(string w) {
             }
         }   
     }    
+
+    if ((cykTable[w.length() - 1][0].find("S") != string::npos)) 
+        cout << w << ": " << "SIM" << endl;
+    else 
+        cout << w << ": " << "NAO" << endl;
 }
 
 int main() {
-    string w, symb, aux, term;
+    string w, leftSymb, aux, rightSymb;
     int n;
     cin >> n;
 
     while (n--) { 
-        cin >> symb >> aux >> term;
-        grammar[symb].push_back(term);
+        cin >> leftSymb >> aux >> rightSymb;
+        grammar[leftSymb].push_back(rightSymb);
     }
 
-    while (getline(cin >> ws, w) and w.compare("*")) {         
+    while (getline(cin >> ws, w) and w.compare("*"))         
         CYK(w);
-        cout << w << ": " << ((cykTable[w.length() - 1][0].find("S") != string::npos) ? "SIM" : "NAO") << endl;
-    }
 
     return 0;
 }
